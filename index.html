@@ -4,10 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موازن المعادلات الكيميائية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
         * { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; padding: 20px; color: #fff; }
+        body { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); min-height: 100vh; color: #fff; }
+        
+        .nav-gradient {
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+        
+        .main-content {
+            padding-top: 100px;
+            padding-bottom: 40px;
+        }
+        
         .container { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 20px; padding: 40px; max-width: 1200px; margin: 0 auto; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); border: 1px solid rgba(255, 255, 255, 0.18); }
         h1 { text-align: center; margin-bottom: 10px; font-size: 2.5em; background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .subtitle { text-align: center; color: #a0a0a0; margin-bottom: 30px; font-size: 0.9em; }
@@ -65,385 +91,465 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useMemo, useCallback, useEffect, useRef } = React;
-        const chemicalDatabase = {
-            elements: {'H':{name:'هيدروجين',name_en:'Hydrogen'},'He':{name:'هيليوم',name_en:'Helium'},'Li':{name:'ليثيوم',name_en:'Lithium'},'Be':{name:'بريليوم',name_en:'Beryllium'},'B':{name:'بورون',name_en:'Boron'},'C':{name:'كربون',name_en:'Carbon'},'N':{name:'نيتروجين',name_en:'Nitrogen'},'O':{name:'أكسجين',name_en:'Oxygen'},'F':{name:'فلور',name_en:'Fluorine'},'Ne':{name:'نيون',name_en:'Neon'},'Na':{name:'صوديوم',name_en:'Sodium'},'Mg':{name:'مغنيسيوم',name_en:'Magnesium'},'Al':{name:'ألومنيوم',name_en:'Aluminum'},'Si':{name:'سيليكون',name_en:'Silicon'},'P':{name:'فوسفور',name_en:'Phosphorus'},'S':{name:'كبريت',name_en:'Sulfur'},'Cl':{name:'كلور',name_en:'Chlorine'},'Ar':{name:'أرجون',name_en:'Argon'},'K':{name:'بوتاسيوم',name_en:'Potassium'},'Ca':{name:'كالسيوم',name_en:'Calcium'},'Fe':{name:'حديد',name_en:'Iron'},'Cu':{name:'نحاس',name_en:'Copper'},'Zn':{name:'زنك',name_en:'Zinc'},'Ag':{name:'فضة',name_en:'Silver'},'Au':{name:'ذهب',name_en:'Gold'},'Pb':{name:'رصاص',name_en:'Lead'},'U':{name:'يورانيوم',name_en:'Uranium'},'Pt':{name:'بلاتين',name_en:'Platinum'},'Br':{name:'بروم',name_en:'Bromine'},'I':{name:'يود',name_en:'Iodine'},'Ba':{name:'باريوم',name_en:'Barium'},'Hg':{name:'زئبق',name_en:'Mercury'}},
-            compounds: [{formula:'H2O',name:'ماء',name_en:'Water',common:true},{formula:'H2O2',name:'بيروكسيد الهيدروجين',name_en:'Hydrogen Peroxide',common:true},{formula:'CO2',name:'ثاني أكسيد الكربون',name_en:'Carbon Dioxide',common:true},{formula:'CO',name:'أول أكسيد الكربون',name_en:'Carbon Monoxide',common:true},{formula:'O2',name:'أكسجين',name_en:'Oxygen',common:true},{formula:'O3',name:'أوزون',name_en:'Ozone',common:false},{formula:'H2',name:'هيدروجين',name_en:'Hydrogen',common:true},{formula:'N2',name:'نيتروجين',name_en:'Nitrogen',common:true},{formula:'Cl2',name:'كلور',name_en:'Chlorine',common:true},{formula:'Br2',name:'بروم',name_en:'Bromine',common:false},{formula:'I2',name:'يود',name_en:'Iodine',common:false},{formula:'NH3',name:'أمونيا',name_en:'Ammonia',common:true},{formula:'CH4',name:'ميثان',name_en:'Methane',common:true},{formula:'C2H6',name:'إيثان',name_en:'Ethane',common:false},{formula:'C3H8',name:'بروبان',name_en:'Propane',common:false},{formula:'C6H12O6',name:'جلوكوز',name_en:'Glucose',common:true},{formula:'NaCl',name:'ملح الطعام',name_en:'Sodium Chloride',common:true},{formula:'KCl',name:'كلوريد البوتاسيوم',name_en:'Potassium Chloride',common:false},{formula:'CaCl2',name:'كلوريد الكالسيوم',name_en:'Calcium Chloride',common:false},{formula:'ZnCl2',name:'كلوريد الزنك',name_en:'Zinc Chloride',common:false},{formula:'HCl',name:'حمض الهيدروكلوريك',name_en:'Hydrochloric Acid',common:true},{formula:'HI',name:'حمض الهيدرويوديك',name_en:'Hydroiodic Acid',common:false},{formula:'H2SO4',name:'حمض الكبريتيك',name_en:'Sulfuric Acid',common:true},{formula:'HNO3',name:'حمض النيتريك',name_en:'Nitric Acid',common:true},{formula:'H3PO4',name:'حمض الفوسفوريك',name_en:'Phosphoric Acid',common:true},{formula:'NaOH',name:'هيدروكسيد الصوديوم',name_en:'Sodium Hydroxide',common:true},{formula:'KOH',name:'هيدروكسيد البوتاسيوم',name_en:'Potassium Hydroxide',common:true},{formula:'Ca(OH)2',name:'هيدروكسيد الكالسيوم',name_en:'Calcium Hydroxide',common:false},{formula:'Al(OH)3',name:'هيدروكسيد الألومنيوم',name_en:'Aluminum Hydroxide',common:false},{formula:'CaCO3',name:'كربونات الكالسيوم',name_en:'Calcium Carbonate',common:true},{formula:'Na2CO3',name:'كربونات الصوديوم',name_en:'Sodium Carbonate',common:false},{formula:'NaHCO3',name:'بيكربونات الصوديوم',name_en:'Sodium Bicarbonate',common:true},{formula:'Fe2O3',name:'أكسيد الحديد III',name_en:'Iron Oxide',common:true},{formula:'Al2O3',name:'أكسيد الألومنيوم',name_en:'Aluminum Oxide',common:false},{formula:'CuO',name:'أكسيد النحاس',name_en:'Copper Oxide',common:false},{formula:'ZnO',name:'أكسيد الزنك',name_en:'Zinc Oxide',common:false},{formula:'CaO',name:'أكسيد الكالسيوم',name_en:'Calcium Oxide',common:true},{formula:'SO2',name:'ثاني أكسيد الكبريت',name_en:'Sulfur Dioxide',common:false},{formula:'NO2',name:'ثاني أكسيد النيتروجين',name_en:'Nitrogen Dioxide',common:false},{formula:'P2O5',name:'خماسي أكسيد الفوسفور',name_en:'Phosphorus Pentoxide',common:false},{formula:'AlCl3',name:'كلوريد الألومنيوم',name_en:'Aluminum Chloride',common:false},{formula:'FeCl3',name:'كلوريد الحديد',name_en:'Iron Chloride',common:false},{formula:'CuSO4',name:'كبريتات النحاس',name_en:'Copper Sulfate',common:false},{formula:'AgNO3',name:'نترات الفضة',name_en:'Silver Nitrate',common:false},{formula:'K3PO4',name:'فوسفات البوتاسيوم',name_en:'Potassium Phosphate',common:false},{formula:'KClO3',name:'كلورات البوتاسيوم',name_en:'Potassium Chlorate',common:false},{formula:'PCl5',name:'خماسي كلوريد الفوسفور',name_en:'Phosphorus Pentachloride',common:false},{formula:'P4',name:'فوسفور أبيض',name_en:'White Phosphorus',common:false}]
-        };
-        const examples = [{title:'💧 تكوين الماء',reactants:['H2','O2'],products:['H2O']},{title:'🔥 احتراق الميثان',reactants:['CH4','O2'],products:['CO2','H2O']},{title:'⚡ Al+HCl',reactants:['Al','HCl'],products:['AlCl3','H2']},{title:'🧬 البناء الضوئي',reactants:['CO2','H2O'],products:['C6H12O6','O2']},{title:'🔬 الصدأ',reactants:['Fe','O2'],products:['Fe2O3']},{title:'🧪 التعادل',reactants:['HCl','NaOH'],products:['NaCl','H2O']},{title:'💨 الأمونيا',reactants:['N2','H2'],products:['NH3']},{title:'🧼 H3PO4+KOH',reactants:['H3PO4','KOH'],products:['K3PO4','H2O']},{title:'🔥 احتراق C2H6',reactants:['C2H6','O2'],products:['CO2','H2O']},{title:'⚡ Na+H2O',reactants:['Na','H2O'],products:['NaOH','H2']},{title:'🧪 Zn+HCl',reactants:['Zn','HCl'],products:['ZnCl2','H2']},{title:'🔥 Al+O2',reactants:['Al','O2'],products:['Al2O3']},{title:'⚗️ تحلل KClO3',reactants:['KClO3'],products:['KCl','O2']},{title:'💧 Ca+H2O',reactants:['Ca','H2O'],products:['Ca(OH)2','H2']},{title:'🔥 P4+O2',reactants:['P4','O2'],products:['P2O5']},{title:'💨 H2+I2',reactants:['H2','I2'],products:['HI']},{title:'💧 PCl5+H2O',reactants:['PCl5','H2O'],products:['H3PO4','HCl']},{title:'🧪 Na2CO3+HCl',reactants:['Na2CO3','HCl'],products:['NaCl','H2O','CO2']}];
-        
-        const formatFormula = (formula) => {
-            const parts = formula.split(/(\d+)/).filter(Boolean);
-            return parts.map((part, index) => /\d+/.test(part) ? <sub key={index}>{part}</sub> : part);
-        };
-        
-        const balanceChemicalEquation = (reactants, products) => {
-            const parseFormula = (formula) => {
-                const elements = {};
-                let processedFormula = formula;
-                const bracketRegex = /\(([^)]+)\)(\d+)/g;
-                let match;
-                while ((match = bracketRegex.exec(formula)) !== null) {
-                    const insideBracket = match[1];
-                    const multiplier = parseInt(match[2], 10);
-                    let replacement = '';
-                    const elementRegex = /([A-Z][a-z]?)(\d*)/g;
-                    let elementMatch;
-                    while ((elementMatch = elementRegex.exec(insideBracket)) !== null) {
-                        const element = elementMatch[1];
-                        const count = elementMatch[2] ? parseInt(elementMatch[2], 10) : 1;
-                        replacement += element + (count * multiplier);
-                    }
-                    processedFormula = processedFormula.replace(match[0], replacement);
+<body class="text-gray-200">
+
+<nav class="nav-gradient fixed w-full top-0 z-50 shadow-lg">
+    <div class="container mx-auto px-6 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <a href="https://ekhtebaraty.com/index.html" class="flex items-center space-x-2 space-x-reverse">
+                    <span class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">اختباراتي</span>
+                </a>
+                <div class="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full pulse-animation"></div>
+            </div>
+            <div class="hidden md:flex space-x-8 space-x-reverse items-center" style="direction: rtl;">
+                <a href="https://ekhtebaraty.com/index.html" class="text-gray-300 hover:text-purple-400 transition-colors font-medium">الرئيسية</a>
+                <a href="https://ekhtebaraty.com/choose.html" class="text-gray-300 hover:text-purple-400 transition-colors font-medium">الاختبارات</a>
+                <a href="https://ekhtebaraty.com/about.html" class="text-gray-300 hover:text-purple-400 transition-colors font-medium">من نحن</a>
+                <a href="https://ekhtebaraty.com/contact.html" class="text-gray-300 hover:text-purple-400 transition-colors font-medium">تواصل معنا</a>
+            </div>
+            <div class="flex items-center">
+                <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-purple-400 ml-4">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-gray-900/90 backdrop-blur-md">
+        <a href="https://ekhtebaraty.com/index.html" class="block py-3 px-6 text-white bg-purple-500/30">الرئيسية</a>
+        <a href="https://ekhtebaraty.com/choose.html" class="block py-3 px-6 text-gray-300 hover:bg-purple-500/20">الاختبارات</a>
+        <a href="https://ekhtebaraty.com/about.html" class="block py-3 px-6 text-gray-300 hover:bg-purple-500/20">من نحن</a>
+        <a href="https://ekhtebaraty.com/contact.html" class="block py-3 px-6 text-gray-300 hover:bg-purple-500/20">تواصل معنا</a>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container mx-auto px-6">
+        <div id="root"></div>
+    </div>
+</div>
+
+<footer class="bg-black text-white py-10">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-wrap justify-between text-center md:text-right">
+            <div class="w-full md:w-1/3 mb-8 md:mb-0">
+                <h4 class="text-xl font-bold mb-4">اختباراتي</h4>
+                <p class="text-gray-400">منصتك الأولى للتعلم والتقييم الذاتي.</p>
+            </div>
+            <div class="w-full md:w-1/3 mb-8 md:mb-0">
+                <h4 class="text-xl font-bold mb-4">روابط سريعة</h4>
+                <ul class="text-gray-400">
+                    <li class="mb-2"><a href="https://ekhtebaraty.com/index.html" class="hover:text-purple-400">الرئيسية</a></li>
+                    <li class="mb-2"><a href="https://ekhtebaraty.com/choose.html" class="hover:text-purple-400">الاختبارات</a></li>
+                    <li class="mb-2"><a href="https://ekhtebaraty.com/contact.html" class="hover:text-purple-400">تواصل معنا</a></li>
+                </ul>
+            </div>
+            <div class="w-full md:w-1/3">
+                <h4 class="text-xl font-bold mb-4">تواصل معنا</h4>
+                <ul class="text-gray-400">
+                    <li class="mb-2"><i class="fas fa-envelope ml-2 text-purple-400"></i>info@ekhtebaraty.com</li>
+                    <li class="mb-2" dir="ltr" class="text-center md:text-right"><i class="fas fa-phone mr-2 text-purple-400"></i>01066059542</li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500">
+            <p>جميع الحقوق محفوظة © <span id="current-year"></span> اختباراتي</p>
+        </div>
+    </div>
+</footer>
+
+<script type="text/babel">
+    const { useState, useMemo, useCallback, useEffect, useRef } = React;
+    const chemicalDatabase = {
+        elements: {'H':{name:'هيدروجين',name_en:'Hydrogen'},'He':{name:'هيليوم',name_en:'Helium'},'Li':{name:'ليثيوم',name_en:'Lithium'},'Be':{name:'بريليوم',name_en:'Beryllium'},'B':{name:'بورون',name_en:'Boron'},'C':{name:'كربون',name_en:'Carbon'},'N':{name:'نيتروجين',name_en:'Nitrogen'},'O':{name:'أكسجين',name_en:'Oxygen'},'F':{name:'فلور',name_en:'Fluorine'},'Ne':{name:'نيون',name_en:'Neon'},'Na':{name:'صوديوم',name_en:'Sodium'},'Mg':{name:'مغنيسيوم',name_en:'Magnesium'},'Al':{name:'ألومنيوم',name_en:'Aluminum'},'Si':{name:'سيليكون',name_en:'Silicon'},'P':{name:'فوسفور',name_en:'Phosphorus'},'S':{name:'كبريت',name_en:'Sulfur'},'Cl':{name:'كلور',name_en:'Chlorine'},'Ar':{name:'أرجون',name_en:'Argon'},'K':{name:'بوتاسيوم',name_en:'Potassium'},'Ca':{name:'كالسيوم',name_en:'Calcium'},'Fe':{name:'حديد',name_en:'Iron'},'Cu':{name:'نحاس',name_en:'Copper'},'Zn':{name:'زنك',name_en:'Zinc'},'Ag':{name:'فضة',name_en:'Silver'},'Au':{name:'ذهب',name_en:'Gold'},'Pb':{name:'رصاص',name_en:'Lead'},'U':{name:'يورانيوم',name_en:'Uranium'},'Pt':{name:'بلاتين',name_en:'Platinum'},'Br':{name:'بروم',name_en:'Bromine'},'I':{name:'يود',name_en:'Iodine'},'Ba':{name:'باريوم',name_en:'Barium'},'Hg':{name:'زئبق',name_en:'Mercury'}},
+        compounds: [{formula:'H2O',name:'ماء',name_en:'Water',common:true},{formula:'H2O2',name:'بيروكسيد الهيدروجين',name_en:'Hydrogen Peroxide',common:true},{formula:'CO2',name:'ثاني أكسيد الكربون',name_en:'Carbon Dioxide',common:true},{formula:'CO',name:'أول أكسيد الكربون',name_en:'Carbon Monoxide',common:true},{formula:'O2',name:'أكسجين',name_en:'Oxygen',common:true},{formula:'O3',name:'أوزون',name_en:'Ozone',common:false},{formula:'H2',name:'هيدروجين',name_en:'Hydrogen',common:true},{formula:'N2',name:'نيتروجين',name_en:'Nitrogen',common:true},{formula:'Cl2',name:'كلور',name_en:'Chlorine',common:true},{formula:'Br2',name:'بروم',name_en:'Bromine',common:false},{formula:'I2',name:'يود',name_en:'Iodine',common:false},{formula:'NH3',name:'أمونيا',name_en:'Ammonia',common:true},{formula:'CH4',name:'ميثان',name_en:'Methane',common:true},{formula:'C2H6',name:'إيثان',name_en:'Ethane',common:false},{formula:'C3H8',name:'بروبان',name_en:'Propane',common:false},{formula:'C6H12O6',name:'جلوكوز',name_en:'Glucose',common:true},{formula:'NaCl',name:'ملح الطعام',name_en:'Sodium Chloride',common:true},{formula:'KCl',name:'كلوريد البوتاسيوم',name_en:'Potassium Chloride',common:false},{formula:'CaCl2',name:'كلوريد الكالسيوم',name_en:'Calcium Chloride',common:false},{formula:'ZnCl2',name:'كلوريد الزنك',name_en:'Zinc Chloride',common:false},{formula:'HCl',name:'حمض الهيدروكلوريك',name_en:'Hydrochloric Acid',common:true},{formula:'HI',name:'حمض الهيدرويوديك',name_en:'Hydroiodic Acid',common:false},{formula:'H2SO4',name:'حمض الكبريتيك',name_en:'Sulfuric Acid',common:true},{formula:'HNO3',name:'حمض النيتريك',name_en:'Nitric Acid',common:true},{formula:'H3PO4',name:'حمض الفوسفوريك',name_en:'Phosphoric Acid',common:true},{formula:'NaOH',name:'هيدروكسيد الصوديوم',name_en:'Sodium Hydroxide',common:true},{formula:'KOH',name:'هيدروكسيد البوتاسيوم',name_en:'Potassium Hydroxide',common:true},{formula:'Ca(OH)2',name:'هيدروكسيد الكالسيوم',name_en:'Calcium Hydroxide',common:false},{formula:'Al(OH)3',name:'هيدروكسيد الألومنيوم',name_en:'Aluminum Hydroxide',common:false},{formula:'CaCO3',name:'كربونات الكالسيوم',name_en:'Calcium Carbonate',common:true},{formula:'Na2CO3',name:'كربونات الصوديوم',name_en:'Sodium Carbonate',common:false},{formula:'NaHCO3',name:'بيكربونات الصوديوم',name_en:'Sodium Bicarbonate',common:true},{formula:'Fe2O3',name:'أكسيد الحديد III',name_en:'Iron Oxide',common:true},{formula:'Al2O3',name:'أكسيد الألومنيوم',name_en:'Aluminum Oxide',common:false},{formula:'CuO',name:'أكسيد النحاس',name_en:'Copper Oxide',common:false},{formula:'ZnO',name:'أكسيد الزنك',name_en:'Zinc Oxide',common:false},{formula:'CaO',name:'أكسيد الكالسيوم',name_en:'Calcium Oxide',common:true},{formula:'SO2',name:'ثاني أكسيد الكبريت',name_en:'Sulfur Dioxide',common:false},{formula:'NO2',name:'ثاني أكسيد النيتروجين',name_en:'Nitrogen Dioxide',common:false},{formula:'P2O5',name:'خماسي أكسيد الفوسفور',name_en:'Phosphorus Pentoxide',common:false},{formula:'AlCl3',name:'كلوريد الألومنيوم',name_en:'Aluminum Chloride',common:false},{formula:'FeCl3',name:'كلوريد الحديد',name_en:'Iron Chloride',common:false},{formula:'CuSO4',name:'كبريتات النحاس',name_en:'Copper Sulfate',common:false},{formula:'AgNO3',name:'نترات الفضة',name_en:'Silver Nitrate',common:false},{formula:'K3PO4',name:'فوسفات البوتاسيوم',name_en:'Potassium Phosphate',common:false},{formula:'KClO3',name:'كلورات البوتاسيوم',name_en:'Potassium Chlorate',common:false},{formula:'PCl5',name:'خماسي كلوريد الفوسفور',name_en:'Phosphorus Pentachloride',common:false},{formula:'P4',name:'فوسفور أبيض',name_en:'White Phosphorus',common:false}]
+    };
+    const examples = [{title:'💧 تكوين الماء',reactants:['H2','O2'],products:['H2O']},{title:'🔥 احتراق الميثان',reactants:['CH4','O2'],products:['CO2','H2O']},{title:'⚡ Al+HCl',reactants:['Al','HCl'],products:['AlCl3','H2']},{title:'🧬 البناء الضوئي',reactants:['CO2','H2O'],products:['C6H12O6','O2']},{title:'🔬 الصدأ',reactants:['Fe','O2'],products:['Fe2O3']},{title:'🧪 التعادل',reactants:['HCl','NaOH'],products:['NaCl','H2O']},{title:'💨 الأمونيا',reactants:['N2','H2'],products:['NH3']},{title:'🧼 H3PO4+KOH',reactants:['H3PO4','KOH'],products:['K3PO4','H2O']},{title:'🔥 احتراق C2H6',reactants:['C2H6','O2'],products:['CO2','H2O']},{title:'⚡ Na+H2O',reactants:['Na','H2O'],products:['NaOH','H2']},{title:'🧪 Zn+HCl',reactants:['Zn','HCl'],products:['ZnCl2','H2']},{title:'🔥 Al+O2',reactants:['Al','O2'],products:['Al2O3']},{title:'⚗️ تحلل KClO3',reactants:['KClO3'],products:['KCl','O2']},{title:'💧 Ca+H2O',reactants:['Ca','H2O'],products:['Ca(OH)2','H2']},{title:'🔥 P4+O2',reactants:['P4','O2'],products:['P2O5']},{title:'💨 H2+I2',reactants:['H2','I2'],products:['HI']},{title:'💧 PCl5+H2O',reactants:['PCl5','H2O'],products:['H3PO4','HCl']},{title:'🧪 Na2CO3+HCl',reactants:['Na2CO3','HCl'],products:['NaCl','H2O','CO2']}];
+    
+    const formatFormula = (formula) => {
+        const parts = formula.split(/(\d+)/).filter(Boolean);
+        return parts.map((part, index) => /\d+/.test(part) ? <sub key={index}>{part}</sub> : part);
+    };
+    
+    const balanceChemicalEquation = (reactants, products) => {
+        const parseFormula = (formula) => {
+            const elements = {};
+            let processedFormula = formula;
+            const bracketRegex = /\(([^)]+)\)(\d+)/g;
+            let match;
+            while ((match = bracketRegex.exec(formula)) !== null) {
+                const insideBracket = match[1];
+                const multiplier = parseInt(match[2], 10);
+                let replacement = '';
+                const elementRegex = /([A-Z][a-z]?)(\d*)/g;
+                let elementMatch;
+                while ((elementMatch = elementRegex.exec(insideBracket)) !== null) {
+                    const element = elementMatch[1];
+                    const count = elementMatch[2] ? parseInt(elementMatch[2], 10) : 1;
+                    replacement += element + (count * multiplier);
                 }
-                const finalRegex = /([A-Z][a-z]?)(\d*)/g;
-                while ((match = finalRegex.exec(processedFormula)) !== null) {
-                    const element = match[1];
-                    const count = match[2] ? parseInt(match[2], 10) : 1;
-                    elements[element] = (elements[element] || 0) + count;
-                }
-                return elements;
-            };
-            
-            const allElements = new Set();
-            const reactantComps = reactants.map(r => parseFormula(r));
-            const productComps = products.map(p => parseFormula(p));
-            reactantComps.forEach(comp => Object.keys(comp).forEach(e => allElements.add(e)));
-            productComps.forEach(comp => Object.keys(comp).forEach(e => allElements.add(e)));
-            
-            const elementList = Array.from(allElements);
-            const numCompounds = reactants.length + products.length;
-            
-            // بناء مصفوفة المعاملات
-            const matrix = [];
-            for (const element of elementList) {
-                const row = [];
-                for (let j = 0; j < reactants.length; j++) {
-                    row.push(reactantComps[j][element] || 0);
-                }
-                for (let j = 0; j < products.length; j++) {
-                    row.push(-(productComps[j][element] || 0));
-                }
-                matrix.push(row);
+                processedFormula = processedFormula.replace(match[0], replacement);
             }
-            
-            // محاولة إيجاد حل بالتجربة والخطأ الذكي
-            const tryCoefficients = (maxVal) => {
-                for (let trial = 0; trial < 10000; trial++) {
-                    const coeffs = [];
-                    
-                    // توليد معاملات عشوائية
-                    for (let i = 0; i < numCompounds; i++) {
-                        coeffs.push(Math.floor(Math.random() * maxVal) + 1);
+            const finalRegex = /([A-Z][a-z]?)(\d*)/g;
+            while ((match = finalRegex.exec(processedFormula)) !== null) {
+                const element = match[1];
+                const count = match[2] ? parseInt(match[2], 10) : 1;
+                elements[element] = (elements[element] || 0) + count;
+            }
+            return elements;
+        };
+        
+        const allElements = new Set();
+        const reactantComps = reactants.map(r => parseFormula(r));
+        const productComps = products.map(p => parseFormula(p));
+        reactantComps.forEach(comp => Object.keys(comp).forEach(e => allElements.add(e)));
+        productComps.forEach(comp => Object.keys(comp).forEach(e => allElements.add(e)));
+        
+        const elementList = Array.from(allElements);
+        const numCompounds = reactants.length + products.length;
+        
+        // بناء مصفوفة المعاملات
+        const matrix = [];
+        for (const element of elementList) {
+            const row = [];
+            for (let j = 0; j < reactants.length; j++) {
+                row.push(reactantComps[j][element] || 0);
+            }
+            for (let j = 0; j < products.length; j++) {
+                row.push(-(productComps[j][element] || 0));
+            }
+            matrix.push(row);
+        }
+        
+        // محاولة إيجاد حل بالتجربة والخطأ الذكي
+        const tryCoefficients = (maxVal) => {
+            for (let trial = 0; trial < 10000; trial++) {
+                const coeffs = [];
+                
+                // توليد معاملات عشوائية
+                for (let i = 0; i < numCompounds; i++) {
+                    coeffs.push(Math.floor(Math.random() * maxVal) + 1);
+                }
+                
+                // التحقق من التوازن
+                let balanced = true;
+                for (let i = 0; i < matrix.length; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < numCompounds; j++) {
+                        sum += matrix[i][j] * coeffs[j];
                     }
-                    
-                    // التحقق من التوازن
-                    let balanced = true;
-                    for (let i = 0; i < matrix.length; i++) {
-                        let sum = 0;
-                        for (let j = 0; j < numCompounds; j++) {
-                            sum += matrix[i][j] * coeffs[j];
-                        }
-                        if (Math.abs(sum) > 0.001) {
-                            balanced = false;
-                            break;
-                        }
-                    }
-                    
-                    if (balanced) {
-                        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
-                        const commonDivisor = coeffs.reduce((acc, val) => gcd(acc, val));
-                        const finalCoeffs = coeffs.map(c => c / commonDivisor);
-                        
-                        return {
-                            reactants: finalCoeffs.slice(0, reactants.length),
-                            products: finalCoeffs.slice(reactants.length)
-                        };
+                    if (Math.abs(sum) > 0.001) {
+                        balanced = false;
+                        break;
                     }
                 }
-                return null;
-            };
-            
-            // محاولة مع قيم مختلفة
-            for (let maxVal of [10, 20, 50, 100]) {
-                const result = tryCoefficients(maxVal);
-                if (result) return result;
+                
+                if (balanced) {
+                    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+                    const commonDivisor = coeffs.reduce((acc, val) => gcd(acc, val));
+                    const finalCoeffs = coeffs.map(c => c / commonDivisor);
+                    
+                    return {
+                        reactants: finalCoeffs.slice(0, reactants.length),
+                        products: finalCoeffs.slice(reactants.length)
+                    };
+                }
             }
-            
             return null;
         };
         
-        const App = () => {
-            const [currentTab, setCurrentTab] = useState('builder');
-            const [selectedReactants, setSelectedReactants] = useState([]);
-            const [selectedProducts, setSelectedProducts] = useState([]);
-            const [reactantSearch, setReactantSearch] = useState('');
-            const [productSearch, setProductSearch] = useState('');
-            const [manualReactants, setManualReactants] = useState('');
-            const [manualProducts, setManualProducts] = useState('');
-            const [databaseSearch, setDatabaseSearch] = useState('');
-            const [result, setResult] = useState(null);
-            const [showReactantSuggestions, setShowReactantSuggestions] = useState(false);
-            const [showProductSuggestions, setShowProductSuggestions] = useState(false);
-            const reactantRef = useRef(null);
-            const productRef = useRef(null);
-            const resultRef = useRef(null);
-            
-            useEffect(() => {
-                const handleClickOutside = (event) => {
-                    if (reactantRef.current && !reactantRef.current.contains(event.target)) setShowReactantSuggestions(false);
-                    if (productRef.current && !productRef.current.contains(event.target)) setShowProductSuggestions(false);
-                };
-                document.addEventListener('mousedown', handleClickOutside);
-                return () => document.removeEventListener('mousedown', handleClickOutside);
-            }, []);
-            
-            const getSuggestions = (query) => {
-                if (query.length === 0) return [];
-                const lowerQuery = query.toLowerCase();
-                const results = [];
-                Object.entries(chemicalDatabase.elements).forEach(([symbol, data]) => {
-                    if (symbol.toLowerCase().includes(lowerQuery) || data.name.includes(lowerQuery) || data.name_en.toLowerCase().includes(lowerQuery)) {
-                        results.push({ formula: symbol, name: data.name, name_en: data.name_en });
-                    }
-                });
-                chemicalDatabase.compounds.forEach(compound => {
-                    if (compound.formula.toLowerCase().includes(lowerQuery) || compound.name.includes(lowerQuery) || compound.name_en.toLowerCase().includes(lowerQuery)) {
-                        results.push(compound);
-                    }
-                });
-                return results;
+        // محاولة مع قيم مختلفة
+        for (let maxVal of [10, 20, 50, 100]) {
+            const result = tryCoefficients(maxVal);
+            if (result) return result;
+        }
+        
+        return null;
+    };
+    
+    const App = () => {
+        const [currentTab, setCurrentTab] = useState('builder');
+        const [selectedReactants, setSelectedReactants] = useState([]);
+        const [selectedProducts, setSelectedProducts] = useState([]);
+        const [reactantSearch, setReactantSearch] = useState('');
+        const [productSearch, setProductSearch] = useState('');
+        const [manualReactants, setManualReactants] = useState('');
+        const [manualProducts, setManualProducts] = useState('');
+        const [databaseSearch, setDatabaseSearch] = useState('');
+        const [result, setResult] = useState(null);
+        const [showReactantSuggestions, setShowReactantSuggestions] = useState(false);
+        const [showProductSuggestions, setShowProductSuggestions] = useState(false);
+        const reactantRef = useRef(null);
+        const productRef = useRef(null);
+        const resultRef = useRef(null);
+        
+        useEffect(() => {
+            const handleClickOutside = (event) => {
+                if (reactantRef.current && !reactantRef.current.contains(event.target)) setShowReactantSuggestions(false);
+                if (productRef.current && !productRef.current.contains(event.target)) setShowProductSuggestions(false);
             };
-            
-            const reactantSuggestions = useMemo(() => getSuggestions(reactantSearch), [reactantSearch]);
-            const productSuggestions = useMemo(() => getSuggestions(productSearch), [productSearch]);
-            
-            const selectCompound = useCallback((formula, type) => {
-                if (type === 'reactant') {
-                    if (!selectedReactants.includes(formula)) setSelectedReactants(prev => [...prev, formula]);
-                    setReactantSearch('');
-                    setShowReactantSuggestions(false);
-                } else {
-                    if (!selectedProducts.includes(formula)) setSelectedProducts(prev => [...prev, formula]);
-                    setProductSearch('');
-                    setShowProductSuggestions(false);
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+        
+        const getSuggestions = (query) => {
+            if (query.length === 0) return [];
+            const lowerQuery = query.toLowerCase();
+            const results = [];
+            Object.entries(chemicalDatabase.elements).forEach(([symbol, data]) => {
+                if (symbol.toLowerCase().includes(lowerQuery) || data.name.includes(lowerQuery) || data.name_en.toLowerCase().includes(lowerQuery)) {
+                    results.push({ formula: symbol, name: data.name, name_en: data.name_en });
                 }
-            }, [selectedReactants, selectedProducts]);
-            
-            const removeCompound = useCallback((index, type) => {
-                if (type === 'reactant') setSelectedReactants(prev => prev.filter((_, i) => i !== index));
-                else setSelectedProducts(prev => prev.filter((_, i) => i !== index));
-            }, []);
-            
-            const clearAll = useCallback(() => {
-                setSelectedReactants([]);
-                setSelectedProducts([]);
-                setManualReactants('');
-                setManualProducts('');
-                setResult(null);
-            }, []);
-            
-            const loadExample = useCallback((example) => {
-                clearAll();
-                if (currentTab === 'builder') {
-                    setSelectedReactants(example.reactants);
-                    setSelectedProducts(example.products);
-                } else {
-                    setManualReactants(example.reactants.join(' + '));
-                    setManualProducts(example.products.join(' + '));
+            });
+            chemicalDatabase.compounds.forEach(compound => {
+                if (compound.formula.toLowerCase().includes(lowerQuery) || compound.name.includes(lowerQuery) || compound.name_en.toLowerCase().includes(lowerQuery)) {
+                    results.push(compound);
                 }
-            }, [currentTab, clearAll]);
-            
-            const balance = useCallback(() => {
-                let reactants, products;
-                if (currentTab === 'builder') {
-                    if (selectedReactants.length === 0 || selectedProducts.length === 0) {
-                        setResult({ title: '⚠️ تنبيه', content: 'الرجاء اختيار المتفاعلات والنواتج', isError: true });
-                        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-                        return;
-                    }
-                    reactants = selectedReactants;
-                    products = selectedProducts;
-                } else {
-                    if (!manualReactants || !manualProducts) {
-                        setResult({ title: '⚠️ خطأ', content: 'الرجاء إدخال المتفاعلات والنواتج', isError: true });
-                        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }),100);
-                        return;
-                    }
-                    reactants = manualReactants.split('+').map(r => r.trim()).filter(Boolean);
-                    products = manualProducts.split('+').map(p => p.trim()).filter(Boolean);
-                }
-                try {
-                    const balanced = balanceChemicalEquation(reactants, products);
-                    if (balanced) {
-                        const balancedReactants = reactants.map((r, i) => {
-                            const coeff = balanced.reactants[i];
-                            return coeff > 1 ? `<span style="font-size: 1.2em; font-weight: bold;">${coeff}</span> ${r}` : r;
-                        }).join(' + ');
-                        const balancedProducts = products.map((p, i) => {
-                            const coeff = balanced.products[i];
-                            return coeff > 1 ? `<span style="font-size: 1.2em; font-weight: bold;">${coeff}</span> ${p}` : p;
-                        }).join(' + ');
-                        const equation = `${balancedReactants} → ${balancedProducts}`;
-                        setResult({ title: '✅ المعادلة الموزونة', content: equation, isError: false });
-                        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-                    } else {
-                         setResult({ title: '⚠️ تنبيه', content: 'لم نتمكن من موازنة هذه المعادلة', isError: true });
-                         setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-                    }
-                } catch (error) {
-                    setResult({ title: '❌ خطأ', content: 'حدث خطأ في معالجة المعادلة', isError: true });
+            });
+            return results;
+        };
+        
+        const reactantSuggestions = useMemo(() => getSuggestions(reactantSearch), [reactantSearch]);
+        const productSuggestions = useMemo(() => getSuggestions(productSearch), [productSearch]);
+        
+        const selectCompound = useCallback((formula, type) => {
+            if (type === 'reactant') {
+                if (!selectedReactants.includes(formula)) setSelectedReactants(prev => [...prev, formula]);
+                setReactantSearch('');
+                setShowReactantSuggestions(false);
+            } else {
+                if (!selectedProducts.includes(formula)) setSelectedProducts(prev => [...prev, formula]);
+                setProductSearch('');
+                setShowProductSuggestions(false);
+            }
+        }, [selectedReactants, selectedProducts]);
+        
+        const removeCompound = useCallback((index, type) => {
+            if (type === 'reactant') setSelectedReactants(prev => prev.filter((_, i) => i !== index));
+            else setSelectedProducts(prev => prev.filter((_, i) => i !== index));
+        }, []);
+        
+        const clearAll = useCallback(() => {
+            setSelectedReactants([]);
+            setSelectedProducts([]);
+            setManualReactants('');
+            setManualProducts('');
+            setResult(null);
+        }, []);
+        
+        const loadExample = useCallback((example) => {
+            clearAll();
+            if (currentTab === 'builder') {
+                setSelectedReactants(example.reactants);
+                setSelectedProducts(example.products);
+            } else {
+                setManualReactants(example.reactants.join(' + '));
+                setManualProducts(example.products.join(' + '));
+            }
+        }, [currentTab, clearAll]);
+        
+        const balance = useCallback(() => {
+            let reactants, products;
+            if (currentTab === 'builder') {
+                if (selectedReactants.length === 0 || selectedProducts.length === 0) {
+                    setResult({ title: '⚠️ تنبيه', content: 'الرجاء اختيار المتفاعلات والنواتج', isError: true });
                     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                    return;
                 }
-            }, [currentTab, selectedReactants, selectedProducts, manualReactants, manualProducts]);
-            
-            const databaseResults = useMemo(() => {
-                if (!databaseSearch) {
-                    return { elements: Object.entries(chemicalDatabase.elements), compounds: chemicalDatabase.compounds };
+                reactants = selectedReactants;
+                products = selectedProducts;
+            } else {
+                if (!manualReactants || !manualProducts) {
+                    setResult({ title: '⚠️ خطأ', content: 'الرجاء إدخال المتفاعلات والنواتج', isError: true });
+                    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }),100);
+                    return;
                 }
-                const lowerQuery = databaseSearch.toLowerCase();
-                const filteredElements = Object.entries(chemicalDatabase.elements).filter(([symbol, data]) => 
-                    symbol.toLowerCase().includes(lowerQuery) || data.name.includes(lowerQuery) || data.name_en.toLowerCase().includes(lowerQuery)
-                );
-                const filteredCompounds = chemicalDatabase.compounds.filter(compound =>
-                    compound.formula.toLowerCase().includes(lowerQuery) || compound.name.includes(lowerQuery) || compound.name_en.toLowerCase().includes(lowerQuery)
-                );
-                return { elements: filteredElements, compounds: filteredCompounds };
-            }, [databaseSearch]);
-            
-            const renderSuggestions = (suggestions, type) => (
-                <div className="suggestions">
-                    {suggestions.length > 0 ? suggestions.map((item, index) => (
-                        <div key={index} className="suggestion-item" onClick={() => selectCompound(item.formula, type)}>
-                            <span className="suggestion-formula">{formatFormula(item.formula)}</span>
-                            <span className="suggestion-name">{item.name} ({item.name_en})</span>
-                        </div>
-                    )) : <div style={{ padding: '15px', color: '#a0a0a0', textAlign: 'center' }}>لا توجد نتائج</div>}
-                </div>
+                reactants = manualReactants.split('+').map(r => r.trim()).filter(Boolean);
+                products = manualProducts.split('+').map(p => p.trim()).filter(Boolean);
+            }
+            try {
+                const balanced = balanceChemicalEquation(reactants, products);
+                if (balanced) {
+                    const balancedReactants = reactants.map((r, i) => {
+                        const coeff = balanced.reactants[i];
+                        return coeff > 1 ? `<span style="font-size: 1.2em; font-weight: bold;">${coeff}</span> ${r}` : r;
+                    }).join(' + ');
+                    const balancedProducts = products.map((p, i) => {
+                        const coeff = balanced.products[i];
+                        return coeff > 1 ? `<span style="font-size: 1.2em; font-weight: bold;">${coeff}</span> ${p}` : p;
+                    }).join(' + ');
+                    const equation = `${balancedReactants} → ${balancedProducts}`;
+                    setResult({ title: '✅ المعادلة الموزونة', content: equation, isError: false });
+                    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                } else {
+                     setResult({ title: '⚠️ تنبيه', content: 'لم نتمكن من موازنة هذه المعادلة', isError: true });
+                     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                }
+            } catch (error) {
+                setResult({ title: '❌ خطأ', content: 'حدث خطأ في معالجة المعادلة', isError: true });
+                setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+            }
+        }, [currentTab, selectedReactants, selectedProducts, manualReactants, manualProducts]);
+        
+        const databaseResults = useMemo(() => {
+            if (!databaseSearch) {
+                return { elements: Object.entries(chemicalDatabase.elements), compounds: chemicalDatabase.compounds };
+            }
+            const lowerQuery = databaseSearch.toLowerCase();
+            const filteredElements = Object.entries(chemicalDatabase.elements).filter(([symbol, data]) => 
+                symbol.toLowerCase().includes(lowerQuery) || data.name.includes(lowerQuery) || data.name_en.toLowerCase().includes(lowerQuery)
             );
-            
-            const commonCompounds = useMemo(() => chemicalDatabase.compounds.filter(c => c.common).slice(0, 15), []);
-            
-            return (
-                <div className="container">
-                    <h1>⚡ موازن المعادلات الكيميائية</h1>
-                    <p className="subtitle">أداة شاملة لموازنة المعادلات الكيميائية مع قاعدة بيانات العناصر والمركبات</p>
-                    <div className="tabs">
-                        <button className={`tab ${currentTab === 'builder' ? 'active' : ''}`} onClick={() => setCurrentTab('builder')}>🧪 بناء المعادلة</button>
-                        <button className={`tab ${currentTab === 'manual' ? 'active' : ''}`} onClick={() => setCurrentTab('manual')}>✍️ إدخال يدوي</button>
-                        <button className={`tab ${currentTab === 'database' ? 'active' : ''}`} onClick={() => setCurrentTab('database')}>📚 قاعدة البيانات</button>
+            const filteredCompounds = chemicalDatabase.compounds.filter(compound =>
+                compound.formula.toLowerCase().includes(lowerQuery) || compound.name.includes(lowerQuery) || compound.name_en.toLowerCase().includes(lowerQuery)
+            );
+            return { elements: filteredElements, compounds: filteredCompounds };
+        }, [databaseSearch]);
+        
+        const renderSuggestions = (suggestions, type) => (
+            <div className="suggestions">
+                {suggestions.length > 0 ? suggestions.map((item, index) => (
+                    <div key={index} className="suggestion-item" onClick={() => selectCompound(item.formula, type)}>
+                        <span className="suggestion-formula">{formatFormula(item.formula)}</span>
+                        <span className="suggestion-name">{item.name} ({item.name_en})</span>
                     </div>
-                    {currentTab === 'builder' && (
-                        <div className="main-grid">
-                           <div className="section" ref={reactantRef}>
-                                <h3>⬅️ المتفاعلات</h3>
-                                <div className="quick-select">
-                                    {commonCompounds.map(c => <button key={c.formula} className="quick-select-btn" onClick={() => selectCompound(c.formula, 'reactant')}>{formatFormula(c.formula)}</button>)}
-                                </div>
-                                <div className="search-bar">
-                                    <span className="search-icon">🔍</span>
-                                    <input type="text" value={reactantSearch} onChange={e => {setReactantSearch(e.target.value); setShowReactantSuggestions(true);}} onFocus={() => setShowReactantSuggestions(true)} placeholder="ابحث عن مركب أو عنصر..." />
-                                    {showReactantSuggestions && reactantSearch && renderSuggestions(reactantSuggestions, 'reactant')}
-                                </div>
-                                <div className="selected-compounds">
-                                    {selectedReactants.length > 0 ? selectedReactants.map((formula, index) => (
-                                        <div key={index} className="compound-tag">
-                                            <span>{formatFormula(formula)}</span>
-                                            <span className="remove" onClick={() => removeCompound(index, 'reactant')}>×</span>
-                                        </div>
-                                    )) : <div style={{ color: '#666', textAlign: 'center', width: '100%' }}>لم يتم اختيار أي مركبات بعد</div>}
-                                </div>
-                           </div>
-                           <div className="section" ref={productRef}>
-                                <h3>➡️ النواتج</h3>
-                                <div className="quick-select">
-                                    {commonCompounds.map(c => <button key={c.formula} className="quick-select-btn" onClick={() => selectCompound(c.formula, 'product')}>{formatFormula(c.formula)}</button>)}
-                                </div>
-                                <div className="search-bar">
-                                    <span className="search-icon">🔍</span>
-                                    <input type="text" value={productSearch} onChange={e => {setProductSearch(e.target.value); setShowProductSuggestions(true);}} onFocus={() => setShowProductSuggestions(true)} placeholder="ابحث عن مركب أو عنصر..." />
-                                    {showProductSuggestions && productSearch && renderSuggestions(productSuggestions, 'product')}
-                                </div>
-                                <div className="selected-compounds">
-                                    {selectedProducts.length > 0 ? selectedProducts.map((formula, index) => (
-                                        <div key={index} className="compound-tag">
-                                            <span>{formatFormula(formula)}</span>
-                                            <span className="remove" onClick={() => removeCompound(index, 'product')}>×</span>
-                                        </div>
-                                    )) : <div style={{ color: '#666', textAlign: 'center', width: '100%' }}>لم يتم اختيار أي مركبات بعد</div>}
-                                </div>
-                           </div>
-                        </div>
-                    )}
-                    {currentTab === 'manual' && (
-                        <div className="main-grid">
-                            <div className="section">
-                                <h3>⬅️ المتفاعلات</h3>
-                                <input type="text" value={manualReactants} onChange={e => setManualReactants(e.target.value)} placeholder="مثال: H2 + O2" dir="ltr" />
+                )) : <div style={{ padding: '15px', color: '#a0a0a0', textAlign: 'center' }}>لا توجد نتائج</div>}
+            </div>
+        );
+        
+        const commonCompounds = useMemo(() => chemicalDatabase.compounds.filter(c => c.common).slice(0, 15), []);
+        
+        return (
+            <div className="container">
+                <h1>⚡ موازن المعادلات الكيميائية</h1>
+                <p className="subtitle">أداة شاملة لموازنة المعادلات الكيميائية مع قاعدة بيانات العناصر والمركبات</p>
+                <div className="tabs">
+                    <button className={`tab ${currentTab === 'builder' ? 'active' : ''}`} onClick={() => setCurrentTab('builder')}>🧪 بناء المعادلة</button>
+                    <button className={`tab ${currentTab === 'manual' ? 'active' : ''}`} onClick={() => setCurrentTab('manual')}>✍️ إدخال يدوي</button>
+                    <button className={`tab ${currentTab === 'database' ? 'active' : ''}`} onClick={() => setCurrentTab('database')}>📚 قاعدة البيانات</button>
+                </div>
+                {currentTab === 'builder' && (
+                    <div className="main-grid">
+                       <div className="section" ref={reactantRef}>
+                            <h3>⬅️ المتفاعلات</h3>
+                            <div className="quick-select">
+                                {commonCompounds.map(c => <button key={c.formula} className="quick-select-btn" onClick={() => selectCompound(c.formula, 'reactant')}>{formatFormula(c.formula)}</button>)}
                             </div>
-                            <div className="section">
-                                <h3>➡️ النواتج</h3>
-                                <input type="text" value={manualProducts} onChange={e => setManualProducts(e.target.value)} placeholder="مثال: H2O" dir="ltr" />
-                            </div>
-                        </div>
-                    )}
-                    {currentTab === 'database' && (
-                        <div>
                             <div className="search-bar">
                                 <span className="search-icon">🔍</span>
-                                <input type="text" value={databaseSearch} onChange={e => setDatabaseSearch(e.target.value)} placeholder="ابحث في قاعدة البيانات..." />
+                                <input type="text" value={reactantSearch} onChange={e => {setReactantSearch(e.target.value); setShowReactantSuggestions(true);}} onFocus={() => setShowReactantSuggestions(true)} placeholder="ابحث عن مركب أو عنصر..." />
+                                {showReactantSuggestions && reactantSearch && renderSuggestions(reactantSuggestions, 'reactant')}
                             </div>
-                             <div>
-                                <h3 style={{ color: '#667eea', margin: '30px 0 20px 0' }}>العناصر الكيميائية</h3>
-                                <div className="element-info">
-                                    {databaseResults.elements.map(([symbol, data]) => (
-                                        <div key={symbol} className="element-card">
-                                            <div className="element-symbol">{symbol}</div>
-                                            <div className="element-name">{data.name}</div>
-                                            <div style={{ fontSize: '0.8em', color: '#666', marginTop: '5px' }}>{data.name_en}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <h3 style={{ color: '#667eea', margin: '30px 0 20px 0' }}>المركبات الكيميائية</h3>
-                                <div style={{ display: 'grid', gap: '10px' }}>
-                                     {databaseResults.compounds.map(compound => (
-                                        <div key={compound.formula} style={{ background: 'rgba(102, 126, 234, 0.1)', border: '1px solid rgba(102, 126, 234, 0.3)', borderRadius: '8px', padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 'bold', color: '#667eea', fontFamily: "'Courier New', monospace", fontSize: '1.2em' }}>{formatFormula(compound.formula)}</div>
-                                                <div style={{ color: '#a0a0a0', fontSize: '0.9em', marginTop: '5px' }}>{compound.name} ({compound.name_en})</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                             </div>
-                        </div>
-                    )}
-                    <div className="btn-group">
-                        <button onClick={balance}>⚖️ وزن المعادلة</button>
-                        <button className="btn-clear" onClick={clearAll}>🗑️ مسح الكل</button>
-                    </div>
-                    {result && (
-                        <div ref={resultRef} className={`result ${result.isError ? 'error' : ''}`}>
-                            <h3>{result.title}</h3>
-                            <div className="equation" dangerouslySetInnerHTML={{ __html: result.content.replace(/(\d+)/g, '<sub>$1</sub>') }}></div>
-                        </div>
-                    )}
-                    <div className="quick-actions">
-                        {examples.map((ex, index) => (
-                            <div key={index} className="quick-action-btn" onClick={() => loadExample(ex)}>
-                                <div>{ex.title}</div>
+                            <div className="selected-compounds">
+                                {selectedReactants.length > 0 ? selectedReactants.map((formula, index) => (
+                                    <div key={index} className="compound-tag">
+                                        <span>{formatFormula(formula)}</span>
+                                        <span className="remove" onClick={() => removeCompound(index, 'reactant')}>×</span>
+                                    </div>
+                                )) : <div style={{ color: '#666', textAlign: 'center', width: '100%' }}>لم يتم اختيار أي مركبات بعد</div>}
                             </div>
-                        ))}
+                       </div>
+                       <div className="section" ref={productRef}>
+                            <h3>➡️ النواتج</h3>
+                            <div className="quick-select">
+                                {commonCompounds.map(c => <button key={c.formula} className="quick-select-btn" onClick={() => selectCompound(c.formula, 'product')}>{formatFormula(c.formula)}</button>)}
+                            </div>
+                            <div className="search-bar">
+                                <span className="search-icon">🔍</span>
+                                <input type="text" value={productSearch} onChange={e => {setProductSearch(e.target.value); setShowProductSuggestions(true);}} onFocus={() => setShowProductSuggestions(true)} placeholder="ابحث عن مركب أو عنصر..." />
+                                {showProductSuggestions && productSearch && renderSuggestions(productSuggestions, 'product')}
+                            </div>
+                            <div className="selected-compounds">
+                                {selectedProducts.length > 0 ? selectedProducts.map((formula, index) => (
+                                    <div key={index} className="compound-tag">
+                                        <span>{formatFormula(formula)}</span>
+                                        <span className="remove" onClick={() => removeCompound(index, 'product')}>×</span>
+                                    </div>
+                                )) : <div style={{ color: '#666', textAlign: 'center', width: '100%' }}>لم يتم اختيار أي مركبات بعد</div>}
+                            </div>
+                       </div>
                     </div>
+                )}
+                {currentTab === 'manual' && (
+                    <div className="main-grid">
+                        <div className="section">
+                            <h3>⬅️ المتفاعلات</h3>
+                            <input type="text" value={manualReactants} onChange={e => setManualReactants(e.target.value)} placeholder="مثال: H2 + O2" dir="ltr" />
+                        </div>
+                        <div className="section">
+                            <h3>➡️ النواتج</h3>
+                            <input type="text" value={manualProducts} onChange={e => setManualProducts(e.target.value)} placeholder="مثال: H2O" dir="ltr" />
+                        </div>
+                    </div>
+                )}
+                {currentTab === 'database' && (
+                    <div>
+                        <div className="search-bar">
+                            <span className="search-icon">🔍</span>
+                            <input type="text" value={databaseSearch} onChange={e => setDatabaseSearch(e.target.value)} placeholder="ابحث في قاعدة البيانات..." />
+                        </div>
+                         <div>
+                            <h3 style={{ color: '#667eea', margin: '30px 0 20px 0' }}>العناصر الكيميائية</h3>
+                            <div className="element-info">
+                                {databaseResults.elements.map(([symbol, data]) => (
+                                    <div key={symbol} className="element-card">
+                                        <div className="element-symbol">{symbol}</div>
+                                        <div className="element-name">{data.name}</div>
+                                        <div style={{ fontSize: '0.8em', color: '#666', marginTop: '5px' }}>{data.name_en}</div>
+                                    </div>
+                                ))}
+                            </div>
+                            <h3 style={{ color: '#667eea', margin: '30px 0 20px 0' }}>المركبات الكيميائية</h3>
+                            <div style={{ display: 'grid', gap: '10px' }}>
+                                 {databaseResults.compounds.map(compound => (
+                                    <div key={compound.formula} style={{ background: 'rgba(102, 126, 234, 0.1)', border: '1px solid rgba(102, 126, 234, 0.3)', borderRadius: '8px', padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <div style={{ fontWeight: 'bold', color: '#667eea', fontFamily: "'Courier New', monospace", fontSize: '1.2em' }}>{formatFormula(compound.formula)}</div>
+                                            <div style={{ color: '#a0a0a0', fontSize: '0.9em', marginTop: '5px' }}>{compound.name} ({compound.name_en})</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                         </div>
+                    </div>
+                )}
+                <div className="btn-group">
+                    <button onClick={balance}>⚖️ وزن المعادلة</button>
+                    <button className="btn-clear" onClick={clearAll}>🗑️ مسح الكل</button>
                 </div>
-            );
-        };
-        const container = document.getElementById('root');
-        const root = ReactDOM.createRoot(container);
-        root.render(<App />);
-    </script>
+                {result && (
+                    <div ref={resultRef} className={`result ${result.isError ? 'error' : ''}`}>
+                        <h3>{result.title}</h3>
+                        <div className="equation" dangerouslySetInnerHTML={{ __html: result.content.replace(/(\d+)/g, '<sub>$1</sub>') }}></div>
+                    </div>
+                )}
+                <div className="quick-actions">
+                    {examples.map((ex, index) => (
+                        <div key={index} className="quick-action-btn" onClick={() => loadExample(ex)}>
+                            <div>{ex.title}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+</script>
+
+<script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    });
+</script>
+
 </body>
 </html>
